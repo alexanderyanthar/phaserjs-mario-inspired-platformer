@@ -14,13 +14,13 @@
         // Create a new Phaser game
         var config = {
             type: Phaser.AUTO,
-            width: 1200,
+            width: 1900,
             height: 800,
             physics: {
                 default: 'arcade',
                 arcade: {
-                    gravity: { y: 300 },
-                    debug: true
+                    gravity: { y: 500 },
+                    debug: false
                 }
             },
             scene: {
@@ -96,8 +96,8 @@
             this.physics.add.collider(this.player, this.platforms);
         }
 
-        var isJumping = false;
-        var isMoving = false;
+        // var isJumping = false;
+        // var isMoving = false;
 
         function update() {
             // Implement game logic and update game objects here
@@ -106,41 +106,46 @@
 
             var touching = this.player.body.touching.down;
 
-            if (cursors.up.isDown) {
-                isJumping = true;
-                if (touching) {
-                    this.player.setVelocityY(-300);
-                    this.playerState = PlayerState.Jump;
-                    this.player.anims.play(PlayerState.Jump, true).once('animationcomplete', () => {
-                        this.playerState = PlayerState.Idle;
-                        if (isMoving) {
-                            this.player.anims.play(PlayerState.Idle, true)
-                        }
-                    });
-                }
-                    // this.playerState = PlayerState.Jump;
-            } else if (cursors.left.isDown) {
-                isMoving = true;
-                this.playerState = PlayerState.Run;
+            if ((cursors.up.isDown && touching)) {
+                this.player.setVelocityY(-300);
+                this.player.anims.play(PlayerState.Jump, true);
+            }   
+            if (cursors.left.isDown && !touching) {
+                console.log('left');
                 this.player.setVelocityX(-250);
                 this.player.flipX = true;
-                this.player.setSize(300, 500);
-                this.player.setOffset(125, 25)
-                this.player.anims.play(PlayerState.Run, true);
+                this.player.setOffset(125, 25);
             } else if (cursors.right.isDown) {
-                isMoving = true;
                 this.player.setVelocityX(250);
                 this.player.flipX = false;
-                this.player.setSize(300, 500);
                 this.player.setOffset(250, 25);
-                this.player.anims.play(PlayerState.Run, true);
-                this.playerState = PlayerState.Run;
+            }
+            if (touching) {
+                if (cursors.left.isDown) {
+                    this.player.setVelocityX(-250);
+                    this.player.flipX = true;
+                    this.player.setSize(300, 500);
+                    this.player.setOffset(125, 25)
+                    this.player.anims.play(PlayerState.Run, true);
+                } else if (cursors.right.isDown) {
+                    this.player.setVelocityX(250);
+                    this.player.flipX = false;
+                    this.player.setSize(300, 500);
+                    this.player.setOffset(250, 25);
+                    this.player.anims.play(PlayerState.Run, true);
+                } else {
+                    this.player.setVelocityX(0);
+                    this.player.anims.play(PlayerState.Idle, true);
+                }
             } else {
-                isMoving = false;
-                this.player.setVelocityX(0);
-                this.player.anims.play(PlayerState.Idle, true);
-                this.playerState = PlayerState.Idle;
+                if (this.playerState !== PlayerState.Jump) {
+                    this.player.anims.play(PlayerState.Jump, true);
+                }
+            }
 
+            // Update playerState variable
+            if (this.player.anims.currentAnim) {
+                this.playerState = this.player.anims.currentAnim.key;
             }
         }
 
